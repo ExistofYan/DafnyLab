@@ -41,12 +41,18 @@
 // would need real numbers). Give it a body.
 // Reminder: for a pair v, the components are v.0 and v.1 .
 function distSquared(v : (int,int)) : int
+{
+  v.0*v.0+v.1*v.1
+}
 // TODO: give a body
 
 
 // Exercise 2.
 // The dot product of (u0,u1) and (v0,v1) is  u0*v0 + u1*v1 .
 function dotProduct(u : (int,int), v : (int,int)) : int
+{
+  u0 * v0 + u1 * v1
+}
 // TODO: give a body
 
 
@@ -54,6 +60,9 @@ function dotProduct(u : (int,int), v : (int,int)) : int
 // zero. Write perpendicular as a PREDICATE (returns bool), using
 // dotProduct.
 predicate perpendicular(u : (int,int), v : (int,int))
+{
+  dotProduct(u,v)
+}
 // TODO: give a body
 
 
@@ -64,6 +73,9 @@ predicate perpendicular(u : (int,int), v : (int,int))
 //   - m is not 0 and n leaves remainder 0 when divided by m.
 // Use  %  (modulus),  &&  (and),  ||  (or).
 function divides(m : nat, n : nat) : bool
+{
+  (m==0 && n==0) || (m!=0 && n%m==0)
+}
   // TODO: give a body
   // try making this a predicate
 
@@ -74,6 +86,9 @@ function divides(m : nat, n : nat) : bool
 //   lo <= x <= hi
 // which means  lo <= x && x <= hi .
 predicate inRange(lo : int, x : int, hi : int)
+{
+  lo <= x <= hi
+}
 // TODO: give a body (use a chained comparison)
 
 
@@ -83,6 +98,10 @@ predicate inRange(lo : int, x : int, hi : int)
 // tax: bind  tax  to  cents / 10  and then return cents + tax.
 function withTax(cents : int) : int
   requires cents >= 0
+  {
+    var tax := cents / 10;
+    cents + tax
+  }
 // TODO: give a body using  var tax := ... ;
 
 /* ------------------------------------------------------------
@@ -98,7 +117,12 @@ datatype light = Red | Orange | Green
 // per constructor.
 function next(l : light) : light
 // TODO: give a body:  match l case Red => ...  etc.
-
+{
+  match l
+  case Red => Green
+  case Green => Orange
+  case Orange => Red
+}
 
 // Exercise 7.
 // A shape carries some data with each constructor.
@@ -110,6 +134,12 @@ datatype shape =
 // area returns:  Rectangle -> height*width ,  Square -> side*side ,
 // Triangle -> base*height/2 . Pattern-match and use the fields.
 function area(s : shape) : nat
+{
+  match s
+  case Rectangle => height * width
+  case Square => side * side
+  case Triangle => base*height / 2
+}
 // TODO: give a body
 
 
@@ -124,6 +154,12 @@ datatype month =
 //   case Jan | Mar | May | ... => 31
 // and you will need an  if  for February.
 function monthLen(m : month, isLeap : bool) : nat
+{
+  match m
+  case Feb => if isLeap then 29 else 28
+  case Jan | Mar | May | Jul | Aug | Oct | Dec => 31
+  case Apr | Jun | Sep  | Nov  => 30
+}
 // TODO: give a body
 
 
@@ -133,12 +169,24 @@ function monthLen(m : month, isLeap : bool) : nat
 //   - but if it's a century year, it's not a leap year
 //   - UNLESS, if it's divisible by 400, then it is a leap year after all
 // IOW, 2024 was a leap year, 1900 wasn't, 2000 was.
-predicate isLeapYear /* write stuff here! */
+predicate isLeapYear(year : int)/* write stuff here! */
+{
+  year % 400 == 0
+}
 
 // write testing lemmas for the test cases in the comment above
 lemma isLY2024()
+{
+  assert isLeapYear(2024);
+}
 lemma isLY1900()
+{
+  assert isLeapYear(1900);
+}
 lemma isLY2000()
+{
+  assert isLeapYear(2000);
+}
 
 /* ------------------------------------------------------------
    PART C -- Recursion, and simple specifications
@@ -150,6 +198,10 @@ lemma isLY2000()
 // power p, remembering  m^0 = 1  and  m^(p+1) = m * m^p .
 // Recurse on p.
 function exp(m : nat, p : nat) : nat
+{
+  if p == 0 then 1
+  else m * exp(m,p-1)
+}
 // TODO: give a body
 
 
@@ -161,6 +213,7 @@ function exp(m : nat, p : nat) : nat
 // on the division disappears.
 function gradient(p1 : (int,int), p2 : (int,int)) : int
   // TODO: add a  requires  clause here
+  requires p2.0 != p1.0
 {
   (p2.1 - p1.1) / (p2.0 - p1.0)
 }
