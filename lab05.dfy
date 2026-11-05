@@ -26,8 +26,7 @@ method absdiff(m : nat, n : nat) returns (r:nat)
   ensures m > n ==> r == m - n
   ensures n >= m ==> r == n - m
 {
-  if m > n { r := m - n ;}
-  else{r:=n-m;}
+  
 }
   
 // ******** Q2
@@ -48,7 +47,7 @@ method absdiff(m : nat, n : nat) returns (r:nat)
 method nthSquare(n:nat) returns (sq:nat)
   ensures sq == n * n
 {
-  sq := n * n;
+
 }
 
 // to run this you will have to give the loops in Q3 bodies, 
@@ -77,11 +76,6 @@ method f11_1a() returns (i:int)
     i := 0;
     while i < 100
       invariant 0 <= i
-      // decreases *
-      // {}
-      {
-        i := i + 1;
-      }
     assert i == 100;
 }
 
@@ -97,7 +91,6 @@ lemma f11_1a_counterexample_lemma()
 {
     // uncomment and insert counter-example value below for XXX
     // assert f11_1a_counter_example_pred(XXX);
-    assert f11_1a_counter_example_pred(101);
 }
 
 // Q3B
@@ -105,12 +98,6 @@ method f11_1d() returns (i:int)
 {
     i := 22;
     while i % 5 != 0 invariant 10 <= i <= 100
-    // decreases *
-    // {}
-    {
-      i := i + 33;
-      break;
-    }
     assert i == 55;
 }
 
@@ -126,7 +113,6 @@ lemma f11_1d_counterexample_lemma()
 {
     // uncomment and insert counter-example value instead of XXX
     //assert f11_1d_counterexaple_pred(XXX);
-    assert f11_1d_counterexaple_pred(60);
 }
 
 // ******** Q4
@@ -138,22 +124,17 @@ lemma f11_1d_counterexample_lemma()
 function fibfn(n:nat) : nat
 {   // the Fibonacci function, implemented/specified very
     // inefficiently
-    if n < 2 then 1 else fibfn(n-1) + fibfn(n-2) //f2=f1+f0=2  f3=f1+f0+f1=3   f4=f3+f2=4  f5=f4+f3=7 f6=f5+f4=11   1 1 2 3 4 7 11
+    if n < 2 then 1 else fibfn(n-1) + fibfn(n-2)
 }
 
 method fibmd(n:nat) returns (r:nat)
   ensures r == fibfn(n)
 {
     var smaller, larger, counter := 1, 1, 0;
-    while (counter < n) // counter == n-1
+    while (counter < n) 
       invariant true
-      invariant 0 <= counter <=n
-      // invariant 1 <= smaller <= larger
-      invariant smaller == fibfn(counter)
-      invariant larger == fibfn(counter + 1)
-      // decreases n - counter
     {
-        smaller, larger := larger, smaller + larger;// c=1 s=1   c=2 s=1   c=3 s=2
+        smaller, larger := larger, smaller + larger;
         counter := counter + 1;
     }
     return smaller;

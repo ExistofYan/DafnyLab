@@ -28,7 +28,7 @@
 // -------- Given infrastructure (from earlier weeks / Lecture 6) --------
 
 datatype list<T> = Nil | Cons(hd : T, tl : list<T>)
-
+datatype option<V> = None | Some(v : V)
 
 type lset = list<int>   // a set of ints, stored as a list
 
@@ -71,20 +71,12 @@ lemma member_append(x : int, l1 : list<int>, l2 : list<int>)
 // Exercise 1.
 // insert(x, A) adds x to the set A -- just put it on the front.
 function insert(x : int, A : lset) : lset
-{
-  Cons(x,A)
-}
 // TODO: give a body
 
 
 // Exercise 2.
 // delete(x, A) removes EVERY copy of x from A.
 function delete(x : int, A : lset) : lset
-{
-  match A
-  case Nil => Nil
-  case Cons(h,t) => if x == h then delete(x,t) else Cons(h,delete(x,t))
-}
 // TODO: give a body
 
 
@@ -93,10 +85,6 @@ function delete(x : int, A : lset) : lset
 // is non-empty -- otherwise there is no element and  A.hd  is not valid.
 // Add a  requires  that rules the empty case out, then return  A.hd .
 function anyElement(A : lset) : int
-  requires A != Nil
-{
-  A.hd
-}
 // TODO: add a  requires , then a body
 
 
@@ -105,7 +93,6 @@ function anyElement(A : lset) : int
 // a member of  insert(y, A)  precisely when x is the newly-inserted y,
 // or x was already a member of A. Write the ensures; {} proves it.
 lemma member_insert(x : int, y : int, A : lset)
-  ensures member(x, insert(y, A)) <==> x == y || member(x,A)
   // TODO: write the ensures  ( member(x, insert(y, A)) <==> ... )
 {}
 
@@ -114,7 +101,6 @@ lemma member_insert(x : int, y : int, A : lset)
 // And the matching lemma for delete: x is a member of  delete(y, A)
 // precisely when x is not the deleted y, AND x was already a member of A.
 lemma member_delete(x : int, y : int, A : lset)
-  ensures member(x,delete(y,A)) <==> x != y && member(x,A)
   // TODO: write the ensures
 {}
 
@@ -134,15 +120,10 @@ lemma member_delete(x : int, y : int, A : lset)
    ------------------------------------------------------------ */
 
 datatype btree<V> = Lf | Node(k : int, value : V, left : btree, right : btree)
-datatype option<V> = None | Some(v : V)
+
 // Exercise 6.  Define  size .
 //   The number of Node nodes in a tree (a leaf Lf contributes nothing).
-function size<V>(t:btree<V>):nat
-{
-  match t
-  case Lf => 0
-  case Node(k,v,l,r) => 1 + size(l) + size(r)
-}
+
 
 // Exercise 7.  Define  lookup .
 //   Given a tree and a key, return the stored value wrapped as  Some ,
@@ -150,14 +131,7 @@ function size<V>(t:btree<V>):nat
 //   efficiently: compare the wanted key with the node's key -- equal
 //   means found; smaller means look in the left subtree; larger means
 //   look in the right subtree.
-function lookup<V>(key:int,t:btree<V>):option<V>
-{
-  match t
-  case Lf => None
-  case Node(k,v,l,r) => if k == key then Some(v)
-                        else if k < key then lookup(key,r)
-                        else lookup(key,l) 
-}
+
 
 // Exercise 8.  Define tree insertion.
 //   Given a key, a value and a tree, return the tree updated so that the
@@ -166,25 +140,13 @@ function lookup<V>(key:int,t:btree<V>):option<V>
 //   NOTE: you already used the name  insert  in Part A, and Dafny does
 //   not allow two functions with the same name -- call this one something
 //   else, e.g.  insertT , and use that name in the lemmas below.
-function insertion<V>(key:int,value:V,t:btree<V>):btree<V>
-{
-  match t
-  case Lf => Node(key,value,Lf,Lf)
-  case Node(k,v,l,r) => if k == key then Node(key,value,l,r)
-                        else if k < key then Node(k,v,l,insertion(key,value,r))
-                        else Node(k,v,insertion(key,value,l),r)
-}
+
 
 // Exercise 9.  Define  keys .
 //   Return the list of all keys in the tree, in ascending order: the
 //   keys of the left subtree, then this node's key, then the keys of the
 //   right subtree. (One of the given helpers builds "a followed by b".)
-function returnKeys<V>(t:btree<V>):lset
-{
-  match t
-  case Lf => Nil
-  case Node(k,v,l,r) => append(returnKeys(l),Cons(k,returnKeys(r)))
-}
+
 
 // -------- Lemmas about the tree operations --------
 // State each of these as a lemma and try to prove it. Unless flagged,
@@ -193,17 +155,12 @@ function returnKeys<V>(t:btree<V>):lset
 // Exercise 10.
 //   Looking up a key straight after inserting it with value v returns
 //   exactly  Some(v) .
-lemma inserting<V>(key:int,value:V,t:btree<V>)
-  ensures lookup(key,insertion(key,value,t)) == Some(value)
-  {}
+
 // Exercise 11.
 //   Looking up a key k2 after inserting a DIFFERENT key k1 gives the
 //   same answer as looking up k2 in the original tree. (You will need a
 //   precondition saying the two keys differ.)
-lemma lookingup<V>(k1:int,k2:int,v1:V,v2:V,t:btree<V>)
-  requires k1 != k2
-  ensures lookup(k2,t) == lookup(k2,insertion(k1,v1,t)) 
-{}
+
 // Exercise 12.
 //   Inserting adds at most one node: the size afterwards is no more than
 //   one greater than the size before.
@@ -237,7 +194,6 @@ lemma lookingup<V>(k1:int,k2:int,v1:V,v2:V,t:btree<V>)
 // upward. Add the  decreases  clause that makes Dafny accept it.
 function upList(lo : int, hi : int) : list<int>
   requires lo <= hi
-  decreases hi - lo
   // TODO: add a  decreases  clause
 {
   if lo == hi then Nil else Cons(lo, upList(lo + 1, hi))
@@ -256,16 +212,12 @@ function upList(lo : int, hi : int) : list<int>
 /* fi = i'th fib number; fpi = fib number of i - 1 ("previous to i") */
 function fib_loop(fi : nat, fpi : nat, i : nat, n : nat) : nat
   // TODO: add a decreases *and* a requires clause
-  requires n >= i
-  decreases n - i
 {
   if n == i then fi
   else fib_loop (fi + fpi, fi, i + 1, n)
 }
 
 function fib(n:nat) : nat 
-  requires n >= 1
-  decreases n -1 
 { 
   if n == 0 then 0 
   else fib_loop(1,0,1,n) 

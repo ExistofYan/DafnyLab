@@ -24,13 +24,12 @@ method nine () {
     var j : int := 9;
     var i : int := 0;
     while i < 10
-      invariant i<=10
-      invariant i+j==9
+      invariant true
     {
         j := j - 1;
         i := i + 1;
     }
-    assert j == -1;
+    assert j == 1000000;
 }
 
 
@@ -42,8 +41,6 @@ method multiply_via_addition(m : nat, n:nat) returns (r:nat)
     var c := 0;
     r := 0;
     while c < n 
-      invariant r == m * c
-      invariant c <= n
     {
         r := r + m;
         c := c + 1;
@@ -59,8 +56,6 @@ method factM(n:nat) returns (r:nat)
   var c := 0;
   r := 1;
   while c < n 
-    invariant c <= n
-    invariant r == factorial(c)
   {
     c := c + 1;
     r := c * r;
@@ -83,13 +78,7 @@ method factM2(n:nat) returns (r:nat)
     r := 1;
     // this loop is deliberately INCOMPLETE; write more loop; write an
     // invariant and get it all to work
-    while 0 < c 
-      invariant c >= 0 
-      invariant c <= n
-      invariant r == factorial(n - c)
-    {
-      r := r * (n - c + 1);//c=n 1  c=n-1 2
-      c := c - 1;//此时c是减一了的c=n-1  c=n-2  n - c + 1实际上是增大了1
+    while 0 < c {
     }
 }
 
@@ -103,11 +92,9 @@ method exponentiate_via_multiplication(m:nat, n:nat) returns (r:nat)
     var c0 := 0;
     r := 1;
     while c0 < n 
-      invariant c0 <= n
-      invariant r == exp(m,c0)
       {
         r := r * m;
-        c0 := c0 + 1;//c0=1 m 2 m*m n m^n
+        c0 := c0 + 1;
       }
 }
 
@@ -130,8 +117,6 @@ method sumList(l : list) returns (s:int)
     var tail := l;
     while tail != Nil
       decreases length(tail)
-      invariant length(tail) >= 0
-      invariant s == sum(l) - sum(tail)
     {
         s := s + tail.elem; 
         tail := tail.next; 
@@ -161,27 +146,21 @@ function sum(l:list) : int
 method exp_done_smart(m:nat, n:nat) returns (r:nat)
   ensures r == exp(m,n)
 {
-    var b,e := m,n;//5 4
+    var b,e := m,n;
     r := 1;
-    
-    while 0 < e 
-      invariant e >= 0                                // e b   e  b    e    b      e    b
-      invariant r >= 0
-      invariant r * exp(b,e) == exp(m,n)              // 4 5   2 5*5   1 5*5*5*5   0 5*5*5*5   
-    {//                       m=5    n=4            m=5  n=3
-        exp_basesquared(b, e / 2);
-        if e % 2 == 0 {//even  4      2                  5*5 
-          
-          b := b * b;//        5*5    25*25              1
-          e := e / 2;//        2      1       
-        } else {//odd          1
-          r := r * b;//        25*25*1               5   5*5*5
-          e := e - 1;//        0                     2    0
+    while 0 < e
+    {
+        if e % 2 == 0 {
+          b := b * b;
+          e := e / 2;
+        } else {
+          r := r * b;
+          e := e - 1;
         }
     }
 }
 
-lemma exp_basesquared(m:nat, n:nat)// 5*5 4       5 8  
+lemma exp_basesquared(m:nat, n:nat)
   ensures exp(m * m, n) == exp(m, 2 * n) {}
 
 
