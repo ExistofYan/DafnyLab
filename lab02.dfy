@@ -58,6 +58,11 @@ function min(a : nat, b : nat) : nat
 //   - taking from Nil gives Nil;
 //   - taking n from Cons(x, xs) keeps x, then takes n-1 from xs.
 function take<T>(n : nat, l : list<T>) : list<T>
+{
+  match l 
+  case Nil => Nil
+  case Cons(h,t) => if n == 0 then Nil else Cons(h,take(n-1,t)) 
+}
 // TODO: give a body
 
 
@@ -67,6 +72,11 @@ function take<T>(n : nat, l : list<T>) : list<T>
 //   - dropping from Nil gives Nil;
 //   - dropping n from Cons(x, xs) drops x, then drops n-1 from xs.
 function drop<T>(n : nat, l : list<T>) : list<T>
+{
+  match l 
+  case Nil => Nil
+  case Cons(h,t) => if n == 0 then l else drop(n-1,t) 
+}
 // TODO: give a body
 
 
@@ -75,6 +85,11 @@ function drop<T>(n : nat, l : list<T>) : list<T>
 // head on the END of the reversed tail:
 //   reverse(Cons(x, xs)) == append(reverse(xs), Cons(x, Nil))
 function reverse<T>(l : list<T>) : list<T>
+{
+  match l 
+  case Nil => Nil
+  case Cons(h,t) => append(reverse(t),Cons(h,Nil))
+}
 // TODO: give a body
 
 
@@ -90,16 +105,29 @@ function reverse<T>(l : list<T>) : list<T>
 // Hint: you can match on the pair  (l1, l2)  and use a wildcard  _
 // for the "either is Nil" cases:
 function zip<A, B>(l1 : list<A>, l2 : list<B>) : list<(A, B)>
+{
+  match (l1,l2)
+  case (Nil, Nil) => Nil
+  case (Nil , _) => Nil
+  case (_,Nil) => Nil
+  case (Cons(h1,t1),Cons(h2,t2)) => Cons((h1,h2),zip(t1,t2))
+}
 // TODO: give a body
 
 
-// Exercise 5.
+// Exercise 5. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // unzip is the reverse operation: it splits a list of pairs back into
 // a pair of lists.
 //   unzip(Nil) == (Nil, Nil)
 //   unzip(Cons((x, y), rest)) == ??
 // Hint: you can destructure with  var (xs, ys) := unzip(rest);
 function unzip<A, B>(l : list<(A, B)>) : (list<A>, list<B>)
+{
+  match l
+  case Nil => (Nil,Nil)
+  case Cons((h1,h2),rest) => var (x,y) := unzip(rest);
+                             (Cons(h1,x),Cons(h2,y))
+}
 // TODO: give a body
 
 
@@ -117,7 +145,13 @@ function unzip<A, B>(l : list<(A, B)>) : (list<A>, list<B>)
 // so the selector might be invalid. Add a  requires  clause that rules
 // this out. Think about what has to be true of the two lengths.
 function zipPartial<A, B>(l1 : list<A>, l2 : list<B>) : list<(A, B)>
+requires length(l1) == length(l2)
 {
+  match (l1,l2)
+  case (Nil,Nil) => Nil
+  case (_,Nil) => Nil
+  case (Nil,_) => Nil
+  case (Cons(h1,t1),Cons(h2,t2)) => Cons((h1,h2),zipPartial(t1,t2))
 }
 
 
@@ -141,6 +175,7 @@ function sumUpTo(n : nat) : nat
 
 lemma triangle(n : nat)
   // TODO: write the ensures
+  ensures 2 * sumUpTo(n) == n * (n + 1)
 {}
 
 // WORKED EXAMPLE -- read this, nothing to do.
@@ -154,6 +189,7 @@ lemma lengthAppend<T>(l1 : list<T>, l2 : list<T>)
 // State and prove: the length of  take(n, l)  is  min(n, length(l)) .
 // Write the ensures; leave the body empty and check Dafny is happy.
 lemma takeLength<T>(n : nat, l : list<T>)
+  ensures length(take(n,l)) == min(n,length(l))
   // TODO: write the ensures
 {}
 
@@ -161,6 +197,7 @@ lemma takeLength<T>(n : nat, l : list<T>)
 // State and prove: the length of  drop(n, l)  is ??
 //   (You may need to write your own helper function for this.)
 lemma dropLength<T>(n : nat, l : list<T>)
+ensures length(drop(n,l)) == if length(l) < n then 0 else length(l) - n
   // TODO: write the ensures
 {}
 
@@ -168,6 +205,7 @@ lemma dropLength<T>(n : nat, l : list<T>)
 // take and drop fit back together: appending  take(n, l)  and
 //  drop(n, l)  gives back  l .
 lemma takeDropAppend<T>(n : nat, l : list<T>)
+ensures append(take(n,l),drop(n,l)) == l
   // TODO: write the ensures
 {}
 
@@ -177,6 +215,8 @@ lemma takeDropAppend<T>(n : nat, l : list<T>)
 // as  unzip(l).0  and  unzip(l).1, or pattern match with
 // ensures var(l1,l2) := unzip(l); ...
 lemma unzipLength<A, B>(l : list<(A, B)>)
+ensures length(l) == length(unzip(l).0)
+ensures length(l) == length(unzip(l).1)
   // TODO: write the ensures (two of them)
 {}
 
@@ -187,6 +227,9 @@ lemma unzipLength<A, B>(l : list<(A, B)>)
 // Note: this lemma mentions zipPartial, so it must satisfy zipPartial's
 // precondition -- you will need the same  requires  clause here too.
 lemma zipPartialLength<A, B>(l1 : list<A>, l2 : list<B>)
+requires length(l1) == length(l2)
+ensures length(zipPartial(l1,l2)) == length(l1)
+ensures length(zipPartial(l1,l2)) == length(l2)
   // TODO: add the same requires as zipPartial, then write the ensures
 {}
 
@@ -202,6 +245,11 @@ datatype tree<T> = Leaf | Node(left : tree<T>, val : T, right : tree<T>)
 // treeSize counts the internal (Node) nodes: a Leaf has size 0; a Node
 // has size 1 plus the sizes of its two subtrees.
 function treeSize<T>(t : tree<T>) : nat
+{
+  match t
+  case Leaf => 0
+  case Node(l,v,r) => 1 + treeSize(l) + treeSize(r)
+}
 // TODO: give a body
 
 
@@ -209,6 +257,11 @@ function treeSize<T>(t : tree<T>) : nat
 // mirror reflects a tree left-to-right: at each Node, swap the two
 // subtrees (recursively) and keep the value.
 function mirror<T>(t : tree<T>) : tree<T>
+{
+  match t
+  case Leaf => Leaf
+  case Node(l,v,r) => Node(mirror(r),v,mirror(l))
+}
 // TODO: give a body
 
 
@@ -216,6 +269,7 @@ function mirror<T>(t : tree<T>) : tree<T>
 // Mirroring does not change the number of nodes. Write the ensures for
 //     treeSize(mirror(t)) == ??
 lemma mirrorSize<T>(t : tree<T>)
+  ensures treeSize(t) == treeSize(mirror(t))
   // TODO: write the ensures
 {}
 
@@ -224,6 +278,7 @@ lemma mirrorSize<T>(t : tree<T>)
 // clause capturing this.
 lemma mirrorMirror<T>(t : tree<T>)
   // TODO: write the ensures
+  ensures mirror(mirror(t)) == t
 {}
 
 // Exercise 17.
@@ -232,6 +287,16 @@ lemma mirrorMirror<T>(t : tree<T>)
 // subtree depths. You will need a  max  function on ints first -- you
 // have seen how to write one in lectures; add it above this exercise.
 function maxDepth<T>(t : tree<T>) : nat
+{
+  match t
+  case Leaf => 0
+  case Node(l,v,r) => 1 + max(maxDepth(l),maxDepth(r))
+}
+
+function max(x : int , y : int ) : int
+{
+  if x > y then x else y
+}
 // TODO: define max (above), then give maxDepth a body
 
 
@@ -246,6 +311,7 @@ function maxDepth<T>(t : tree<T>) : nat
 // try a different relation until it holds.
 lemma depthAndSize<T>(t : tree<T>)
   // TODO: state a relation between maxDepth(t) and treeSize(t)
+  ensures maxDepth(t) <= treeSize(t)
 {}
 
 // ============================================================
