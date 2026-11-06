@@ -51,7 +51,7 @@ function distSquared(v : (int,int)) : int
 // The dot product of (u0,u1) and (v0,v1) is  u0*v0 + u1*v1 .
 function dotProduct(u : (int,int), v : (int,int)) : int
 {
-  u0 * v0 + u1 * v1
+  u.0 * v.0 + u.1 * v.1
 }
 // TODO: give a body
 
@@ -61,7 +61,7 @@ function dotProduct(u : (int,int), v : (int,int)) : int
 // dotProduct.
 predicate perpendicular(u : (int,int), v : (int,int))
 {
-  dotProduct(u,v)
+  dotProduct(u,v) == 0
 }
 // TODO: give a body
 
@@ -136,9 +136,9 @@ datatype shape =
 function area(s : shape) : nat
 {
   match s
-  case Rectangle => height * width
-  case Square => side * side
-  case Triangle => base*height / 2
+  case Rectangle(height,width) => height * width
+  case Square(side) => side * side
+  case Triangle(base,height) => base*height / 2
 }
 // TODO: give a body
 
@@ -171,7 +171,7 @@ function monthLen(m : month, isLeap : bool) : nat
 // IOW, 2024 was a leap year, 1900 wasn't, 2000 was.
 predicate isLeapYear(year : int)/* write stuff here! */
 {
-  year % 400 == 0
+  year % 400 == 0 || (year % 4 == 0 && year % 100 != 0)
 }
 
 // write testing lemmas for the test cases in the comment above
@@ -181,7 +181,7 @@ lemma isLY2024()
 }
 lemma isLY1900()
 {
-  assert isLeapYear(1900);
+  assert !isLeapYear(1900);
 }
 lemma isLY2000()
 {
@@ -224,6 +224,9 @@ function gradient(p1 : (int,int), p2 : (int,int)) : int
 // Give a body that satisfies it. (Many answers work.)
 function makeItBigger(i : int) : int
   ensures makeItBigger(i) > i
+  {
+    i + 1
+  }
 // TODO: give a body
 
 
@@ -241,10 +244,12 @@ function fact(n : nat) : nat
 // Claim: fact(4) equals 24.
 lemma factTest1()
   // TODO: write the ensures for "fact(4)"
+  ensures fact(4) == 24
 {}
 
 // Claim: fact(6) is greater than 100.
 lemma factTest2()
+ensures fact(6) > 100
   // TODO: write the ensures that claims that 6! is strictly larger than 100
 {}
 
@@ -278,6 +283,11 @@ function length<T>(l : list<T>) : nat
 //   - if l1 is Nil, the answer is just l2;
 //   - if l1 is Cons(x, xs), the answer is Cons(x, <append of xs, l2>).
 function append<T>(l1 : list<T>, l2 : list<T>) : list<T>
+{
+  match l1
+  case Nil => l2
+  case Cons(h,t) => Cons(h,append(t,l2))
+}
 // TODO: give a body, following the pattern of length above
 
 
@@ -286,6 +296,11 @@ function append<T>(l1 : list<T>, l2 : list<T>) : list<T>
 //   - Nil contains nothing;
 //   - Cons(y, ys) contains x when  x == y , or when x is somewhere in ys.
 function member(x : int, A : list<int>) : bool
+{
+  match A
+  case Nil => false
+  case Cons(h,t) => h == x || member(x,t)
+}
 // TODO: give a body
 
 
@@ -294,9 +309,15 @@ function member(x : int, A : list<int>) : bool
 // internal (Node) node; Lf is an empty leaf.
 datatype tree<V> = Lf | Node(key : string, val : V, left : tree<V>, right : tree<V>)
 
+
 // size counts the internal (Node) nodes. A Lf has size 0; a Node has
 // size 1 plus the sizes of its two subtrees. Recurse, like length.
 function size<V>(t : tree<V>) : nat
+{
+  match t
+  case Lf => 0
+  case Node(k,v,l,r) => 1 + size(l) +size(r)
+}
 // TODO: give a body
 
 // ============================================================

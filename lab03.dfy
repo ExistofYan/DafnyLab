@@ -71,12 +71,20 @@ lemma member_append(x : int, l1 : list<int>, l2 : list<int>)
 // Exercise 1.
 // insert(x, A) adds x to the set A -- just put it on the front.
 function insert(x : int, A : lset) : lset
+{
+  Cons(x,A)
+}
 // TODO: give a body
 
 
 // Exercise 2.
 // delete(x, A) removes EVERY copy of x from A.
 function delete(x : int, A : lset) : lset
+{
+  match A
+  case Nil => Nil
+  case Cons(h,t) => if x == h then delete(x,t) else Cons(h,delete(x,t))
+}
 // TODO: give a body
 
 
@@ -85,6 +93,10 @@ function delete(x : int, A : lset) : lset
 // is non-empty -- otherwise there is no element and  A.hd  is not valid.
 // Add a  requires  that rules the empty case out, then return  A.hd .
 function anyElement(A : lset) : int
+requires A != Nil
+{
+  A.hd
+}
 // TODO: add a  requires , then a body
 
 
@@ -94,6 +106,7 @@ function anyElement(A : lset) : int
 // or x was already a member of A. Write the ensures; {} proves it.
 lemma member_insert(x : int, y : int, A : lset)
   // TODO: write the ensures  ( member(x, insert(y, A)) <==> ... )
+  ensures member(x,insert(y,A)) <==> x == y || member(x,A) 
 {}
 
 
@@ -101,6 +114,7 @@ lemma member_insert(x : int, y : int, A : lset)
 // And the matching lemma for delete: x is a member of  delete(y, A)
 // precisely when x is not the deleted y, AND x was already a member of A.
 lemma member_delete(x : int, y : int, A : lset)
+ensures member(x,delete(y,A)) <==> x != y && member(x,A)
   // TODO: write the ensures
 {}
 
@@ -123,7 +137,12 @@ datatype btree<V> = Lf | Node(k : int, value : V, left : btree, right : btree)
 
 // Exercise 6.  Define  size .
 //   The number of Node nodes in a tree (a leaf Lf contributes nothing).
-
+function TreeSize(t : btree) : int 
+{
+  match t
+  case Lf => 0
+  case Node(k,v,l,r) => 1 + TreeSize(l) + TreeSize(r)
+}
 
 // Exercise 7.  Define  lookup .
 //   Given a tree and a key, return the stored value wrapped as  Some ,
@@ -131,6 +150,14 @@ datatype btree<V> = Lf | Node(k : int, value : V, left : btree, right : btree)
 //   efficiently: compare the wanted key with the node's key -- equal
 //   means found; smaller means look in the left subtree; larger means
 //   look in the right subtree.
+function LookUp<V>(t : btree<V> , key : int) : option<V>
+{
+  match t
+  case Lf => None
+  case  Node(k,v,l,r) => if k == key then Some(v)
+                         else if k < key then LookUp(r,key)
+                         else LookUp(l,key)
+}
 
 
 // Exercise 8.  Define tree insertion.
@@ -140,13 +167,26 @@ datatype btree<V> = Lf | Node(k : int, value : V, left : btree, right : btree)
 //   NOTE: you already used the name  insert  in Part A, and Dafny does
 //   not allow two functions with the same name -- call this one something
 //   else, e.g.  insertT , and use that name in the lemmas below.
+function TreeInsertion<V>(t : btree<V> ,key : int, value : V) : btree<V>
+{
+  match t 
+  case Lf => Node(key,value,Lf,Lf)
+  case Node(k,v,l,r) => if k == key then Node(k,value,l,r)
+                        else if k < key then Node(k,v,l,TreeInsertion(r,key,value))
+                        else Node(k,v,TreeInsertion(l,key,value),r)
+}
 
 
 // Exercise 9.  Define  keys .
 //   Return the list of all keys in the tree, in ascending order: the
 //   keys of the left subtree, then this node's key, then the keys of the
 //   right subtree. (One of the given helpers builds "a followed by b".)
-
+function AllKeys<V>(t : btree<V>): lset
+{
+  match t
+  case Lf => Nil
+  case Node(k,v,l,r) => append(AllKeys(l),Cons(k,AllKeys(r)))
+}
 
 // -------- Lemmas about the tree operations --------
 // State each of these as a lemma and try to prove it. Unless flagged,
@@ -155,15 +195,24 @@ datatype btree<V> = Lf | Node(k : int, value : V, left : btree, right : btree)
 // Exercise 10.
 //   Looking up a key straight after inserting it with value v returns
 //   exactly  Some(v) .
+lemma LookUpTest<V>(key : int, value : V, t : btree<V>)
+ensures LookUp(TreeInsertion(t,key,value),key) == Some(value)
+{}
 
 // Exercise 11.
 //   Looking up a key k2 after inserting a DIFFERENT key k1 gives the
 //   same answer as looking up k2 in the original tree. (You will need a
 //   precondition saying the two keys differ.)
+lemma LookUpTest2<V>(key1 : int,key2:int ,value : V, t : btree<V>)
+requires key1 != key2
+ensures LookUp(TreeInsertion(t,key1,value),key2) == LookUp(t,key2)
+{}
 
 // Exercise 12.
 //   Inserting adds at most one node: the size afterwards is no more than
 //   one greater than the size before.
+lemma InsertSize<V>(key : int, value : V, t : btree<V>)
+ensures TreeSize(t) <= TreeSize(TreeInsertion(t,key,value))
 
 // Exercise 13.  ** FLAGGED: {} is NOT enough here. **
 //   Inserting a key that was NOT already present increases the size by
@@ -171,6 +220,7 @@ datatype btree<V> = Lf | Node(k : int, value : V, left : btree, right : btree)
 //   keys function.) Try the empty body first and watch it fail -- this
 //   is the kind of fact that needs a real proof. If you want to push on,
 //   the given lemma  member_append  is the tool that unlocks it.
+
 
 // Exercise 14.  ** FLAGGED: {} is NOT enough here either **
 //   The number of keys of a tree equals its size:  length(keys(t))  is
