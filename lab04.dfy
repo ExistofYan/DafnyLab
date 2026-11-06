@@ -37,8 +37,18 @@
    outputs all fall into the range 28..31 inclusive.
 */
 function daysInMonth(m : nat, isLeapYear : bool) : nat
+requires 0 <= m <= 11
+{
+   match m
+   case 1 => if isLeapYear then 29 else 28
+   case 0 | 2 | 4 | 6 | 7 | 9 | 11 => 31
+   case 3 | 5 | 8 | 10 => 30
+}
 
 lemma daysInMonthOutputOK(m:nat, isLeapYear:bool)
+requires 0 <= m <= 11
+ensures 28 <= daysInMonth(m,isLeapYear) <= 31
+{}
 
 // ******** Q2
 /* Complete the function for determining if a year is a leap-year.
@@ -47,6 +57,9 @@ lemma daysInMonthOutputOK(m:nat, isLeapYear:bool)
    - when y is divisible by 100, it's also divisible by 400
 */
 predicate isLeapYear(y : nat) 
+{
+   (y % 4 == 0 && y % 100 == 0) || y % 400 == 0
+}
 
 // ******** Q3
 /* write the function that for a month number m, and given the 
@@ -68,8 +81,14 @@ predicate isLeapYear(y : nat)
    Follow up with a lemma checking the daysUpToStartOf(3,true) example.
 */
 function daysUpToStartOf (m:nat, isLeapYear : bool) : nat
+requires 0 <= m <= 11
+{
+   if m <= 0 then 0 else daysInMonth(m-1,isLeapYear) + daysUpToStartOf(m-1,isLeapYear)
+}
 
 lemma dAprilTrue() 
+ensures  daysUpToStartOf(3,true) == 91
+{}
 
 // ******** Q4
 /* Using the date datatype below, write the predicate for 
@@ -80,6 +99,9 @@ lemma dAprilTrue()
    */
 datatype date = D (day : nat, month : nat)
 predicate date_lt(d1 : date, d2 : date)
+{
+   d1.month < d2.month || (d1.month == d2.month && d1.day < d2.day)
+}
 
 // ******** Q5
 /* State and prove the lemma stating that 
@@ -90,6 +112,8 @@ predicate date_lt(d1 : date, d2 : date)
 */
 
 lemma twelveOct_lt_twoDec()
+ensures date_lt(D(12,9),D(2,11))
+{}
 
 // ******** Q6
 /* State and prove the lemma stating that for a pair of dates d1 and d2, 
@@ -98,6 +122,8 @@ lemma twelveOct_lt_twoDec()
 */
 
 lemma date_lt_trichotomy(d1:date, d2:date)
+ensures d1 == d2 || date_lt(d1,d2) || date_lt(d2,d1)
+{}
 
 /********************************************/
 /****** Part II : Simple requires           */
@@ -137,11 +163,17 @@ lemma subset_member(x:int, A:ilist, B:ilist)
         OR: use a match-expression (or two?) in your requires clause
 */
 function div12(l : ilist) : int
+requires l != Nil && l.tl!=Nil && l.tl.hd != 0
+{
+   l.hd / l.tl.hd
+}
 
 // ******** Q8 
 /* State and prove the testing lemma
    asserting that div12(Cons(14,Cons(6,Cons(3,Nil)))) == 2 */
 lemma testing_div12()
+ensures div12(Cons(14,Cons(6,Cons(3,Nil)))) == 2
+{}
 
 /********************************************/
 /****** Part III : List Programming         */
@@ -161,17 +193,26 @@ lemma testing_div12()
    the end
 */
 function interleave<T>(l1 : list<T>, l2 : list<T>) : list<T>
+{
+   match (l1, l2)
+   case (Nil,_) => l2
+   case (_,Nil) => l1
+   case (Cons(h1,t1),Cons(h2,t2)) => Cons(h1,Cons(h2,interleave(t1,t2)))
+}
 
 // ******** Q10
 /* write a testing lemma for interleave checking 
    the example in the comment above */
 lemma testInterleave()
+ensures interleave(Cons(1,Cons(2,Cons(3,Nil))),Cons(4,Cons(5,Cons(6,Nil)))) == Cons(1,Cons(4,Cons(2,Cons(5,Cons(3,Cons(6,Nil))))))
+{}
 
 // ******** Q11
 /* write and prove the lemma that the length of
    the result of interleaving two lists is the sum
    of the lengths of the lists */
 lemma length_interleave<T>(l1:list<T>, l2:list<T>)
+ensures length(Cons(1,Cons(2,Cons(3,Nil)))) + length(Cons(4,Cons(5,Cons(6,Nil)))) == length(Cons(1,Cons(4,Cons(2,Cons(5,Cons(3,Cons(6,Nil)))))))
 
 // ******** Q12
 /* write and prove the lemma stating that if an 
@@ -179,6 +220,8 @@ lemma length_interleave<T>(l1:list<T>, l2:list<T>)
    interleave of two lists l1 and l2
 */
 lemma member_interleave1(i : int, l1: ilist, l2:ilist)
+ensures member(i,l1) ==> member(i,interleave(l1,l2))
+{}
 
 /********************************************/
 /****** Part IV : Termination               */
@@ -189,6 +232,8 @@ lemma member_interleave1(i : int, l1: ilist, l2:ilist)
    clauses for the following function, which produces 
    ascending lists of numbers up to some limit */
 function upToNList(start: int, end : int) : ilist
+requires end >= start
+decreases end -start
 {
     if start == end then Nil
     else Cons(start, upToNList(start + 1, end))
@@ -198,6 +243,10 @@ function upToNList(start: int, end : int) : ilist
 /* prove that the length of upToNList(start,end) is
    equal to end - start. */
 lemma length_upToNList(start : int, end : int)
+requires end >= start
+decreases end -start
+ensures length(upToNList(start,end)) == end - start
+{}
 
 /********************************************/
 /****** Part V : Trickier Proofs            */
@@ -206,12 +255,53 @@ lemma length_upToNList(start : int, end : int)
 // ******** Q15
 /* Prove that the subset relation is transitive */
 lemma subset_transitive(A : ilist, B : ilist, C : ilist)
+requires subset(A,B)
+requires subset(B,C)
+ensures subset(A,C)
+{
+   match A
+   case Nil => {}
+   case Cons(h,t) => {
+      assert subset(A,B);
+      assert subset(B,C);
+      assert member(h,B);
+      assert member(h,C) by {subset_member(h,B,C);}
+   }
+}
 
 // ******** Q16
 /* Prove that if A and B are subsets of each other, then
-   i is a member of A iff it is a member of B */
-lemma subset_antisym(i : int, A : ilist, B : ilist)
+   i is a member of A if it is a member of B */
+lemma subset_antisym(i : int, A : ilist, B : ilist)//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+requires subset(A,B) 
+requires subset(B,A)
+ensures member(i,A) <==> member(i,B)
+{
+   if member(i,A) {
+      match A case Nil => {}
+      case Cons(h,t) => {
+         if h == i {
 
+         }else{
+            assert member(i,t);
+            assert member(i,A);
+            assert member(i,B) by {subset_member(i,A,B);}
+         }
+      }
+   }
+   if member(i,B) {
+      match B case Nil => {}
+      case Cons(h,t) => {
+         if h == i {
+
+         }else{
+            assert member(i,t);
+            assert member(i,B);
+            assert member(i,A) by {subset_member(i,B,A);}
+         }
+      }
+   }
+}
 
 /********************************************/
 /****** Part VI : Quantifiers               */
@@ -222,6 +312,8 @@ lemma subset_antisym(i : int, A : ilist, B : ilist)
    Add the requires clause that we need to make
    Dafny happy */
 function nth<T>(n : nat, l : list<T>) : T
+// requires l != Nil ??????????????????????????????????????????????????????????????????????
+requires 0 <= n < length(l) // this includes l != Nil
 {
     match l 
     case Cons(h,t) => if n==0 then h else nth(n-1,t)
@@ -231,8 +323,26 @@ function nth<T>(n : nat, l : list<T>) : T
 /* prove the following result; that an integer i is a 
    member of l iff there's an index n such that nth(n,l) == i
 */
-lemma member_nth(i:int, l : list<int>)
+lemma member_nth(i:int, l : list<int>)//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ensures member(i, l) <==> exists n : nat | n < length(l) :: nth(n,l) == i
+  {
+   if member(i,l) {
+      match l //do not have the situation that l is Nil
+      case Cons(h,t) => {
+         if h == i {
+            assert nth(0,l) == i;
+         }else{
+            assert member(i,t);
+            var n : nat :| n < length(t) && nth(n,t) == i;
+            assert l == Cons(h,t);
+            assert h != i;
+            assert length(t) + 1 == length(l);
+            assert nth(n+1,l)==i;
+         }
+      }
+   }else{
+   }
+  }
 
 // ***** Feedback *****
 // Please rate the following course activities in terms of usefulness to you, 

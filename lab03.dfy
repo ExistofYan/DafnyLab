@@ -212,7 +212,7 @@ ensures LookUp(TreeInsertion(t,key1,value),key2) == LookUp(t,key2)
 //   Inserting adds at most one node: the size afterwards is no more than
 //   one greater than the size before.
 lemma InsertSize<V>(key : int, value : V, t : btree<V>)
-ensures TreeSize(t) <= TreeSize(TreeInsertion(t,key,value))
+ensures TreeSize(TreeInsertion(t,key,value)) - TreeSize(t) <= 1
 
 // Exercise 13.  ** FLAGGED: {} is NOT enough here. **
 //   Inserting a key that was NOT already present increases the size by
@@ -244,6 +244,7 @@ ensures TreeSize(t) <= TreeSize(TreeInsertion(t,key,value))
 // upward. Add the  decreases  clause that makes Dafny accept it.
 function upList(lo : int, hi : int) : list<int>
   requires lo <= hi
+  decreases hi - lo
   // TODO: add a  decreases  clause
 {
   if lo == hi then Nil else Cons(lo, upList(lo + 1, hi))
@@ -262,6 +263,8 @@ function upList(lo : int, hi : int) : list<int>
 /* fi = i'th fib number; fpi = fib number of i - 1 ("previous to i") */
 function fib_loop(fi : nat, fpi : nat, i : nat, n : nat) : nat
   // TODO: add a decreases *and* a requires clause
+  requires i <= n
+  decreases n - i
 {
   if n == i then fi
   else fib_loop (fi + fpi, fi, i + 1, n)
