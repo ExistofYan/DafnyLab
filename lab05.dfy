@@ -89,7 +89,7 @@ method f11_1a() returns (i:int)
 {
     i := 0;
     while i < 100
-      invariant 0 <= i
+      invariant 0 <= i <= 100//循环条件不成立时 与 invariant的交集 就是assert，不看方法体
     assert i == 100;
 }
 
@@ -104,14 +104,16 @@ lemma f11_1a_counterexample_lemma()
   ensures exists i : int :: f11_1a_counter_example_pred(i)
 {
     // uncomment and insert counter-example value below for XXX
-    // assert f11_1a_counter_example_pred(XXX);
+    assert f11_1a_counter_example_pred(101);
 }
 
 // Q3B
-method f11_1d() returns (i:int)
+method f11_1d() returns (i:int)//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 {
     i := 22;
-    while i % 5 != 0 invariant 10 <= i <= 100
+    while i % 5 != 0 //negation i % 5 == 0
+    invariant 10 <= i <= 100 
+    invariant i % 11 == 0 //11 22 33 44 55 66 77 88 99
     assert i == 55;
 }
 
@@ -126,7 +128,7 @@ lemma f11_1d_counterexample_lemma()
   ensures exists i:int :: f11_1d_counterexaple_pred(i)
 {
     // uncomment and insert counter-example value instead of XXX
-    //assert f11_1d_counterexaple_pred(XXX);
+    assert f11_1d_counterexaple_pred(10);
 }
 
 // ******** Q4
@@ -141,18 +143,30 @@ function fibfn(n:nat) : nat
     if n < 2 then 1 else fibfn(n-1) + fibfn(n-2)
 }
 
-method fibmd(n:nat) returns (r:nat)
+method fibmd(n:nat) returns (r:nat)//?????????????????????????????????????????????????????????????
   ensures r == fibfn(n)
 {
     var smaller, larger, counter := 1, 1, 0;
     while (counter < n) 
-      invariant true
+      invariant counter <= n
+      invariant smaller <= larger
+      invariant smaller == fibfn(counter)
+      invariant larger == fibfn(counter + 1)
     {
         smaller, larger := larger, smaller + larger;
         counter := counter + 1;
     }
     return smaller;
 }
+/*
+smaller larger count
+   1      1      0
+   1      2      1
+   2      3      2
+   3      5      3
+   5      8      4
+*/
+
 
 // ******** Q4
 /* Give your nthSquare method with a loop an invariant
