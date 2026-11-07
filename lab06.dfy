@@ -24,12 +24,13 @@ method nine () {
     var j : int := 9;
     var i : int := 0;
     while i < 10
-      invariant true
+      invariant i <= 10
+      invariant i + j == 9
     {
         j := j - 1;
         i := i + 1;
     }
-    assert j == 1000000;
+    assert j == -1;
 }
 
 
@@ -41,6 +42,8 @@ method multiply_via_addition(m : nat, n:nat) returns (r:nat)
     var c := 0;
     r := 0;
     while c < n 
+    invariant c <= n
+    invariant r == m * c
     {
         r := r + m;
         c := c + 1;
@@ -56,6 +59,8 @@ method factM(n:nat) returns (r:nat)
   var c := 0;
   r := 1;
   while c < n 
+  invariant c <= n
+  invariant r == factorial(c)
   {
     c := c + 1;
     r := c * r;
@@ -78,10 +83,22 @@ method factM2(n:nat) returns (r:nat)
     r := 1;
     // this loop is deliberately INCOMPLETE; write more loop; write an
     // invariant and get it all to work
-    while 0 < c {
+    while 0 < c 
+    invariant n >= c >= 0
+    invariant r * factorial(c) == factorial(n)  
+    {
+      r := r * c;
+      c := c - 1;
     }
 }
-
+/*
+r   c
+1   5  120 / 120(5!)
+5   4  120 / 24(4!)
+20  3  120 / 6(3!)
+60  2
+120 1
+*/
 // ******** Q5
 /* This function implements exponentiation by repeatedly multiplying;
    provide the invariant to make it verify. The exp function is written
@@ -92,6 +109,8 @@ method exponentiate_via_multiplication(m:nat, n:nat) returns (r:nat)
     var c0 := 0;
     r := 1;
     while c0 < n 
+    invariant c0 <= n
+    invariant r == exp(m , c0)
       {
         r := r * m;
         c0 := c0 + 1;
@@ -117,6 +136,8 @@ method sumList(l : list) returns (s:int)
     var tail := l;
     while tail != Nil
       decreases length(tail)
+      invariant tail != Nil || tail == Nil
+      invariant s == sum(l) - sum(tail)
     {
         s := s + tail.elem; 
         tail := tail.next; 
@@ -143,21 +164,25 @@ function sum(l:list) : int
    into the code so that Dafny can see your invariant is 
    maintained.
 */
-method exp_done_smart(m:nat, n:nat) returns (r:nat)
+method exp_done_smart(m:nat, n:nat) returns (r:nat)//?!?!?!?!!!????!??!?!?!??!?!?!?!?!?!?!??!?!?!?!?!
   ensures r == exp(m,n)
 {
-    var b,e := m,n;
+    var b,e := m,n;//4 4
     r := 1;
     while 0 < e
+    invariant e >= 0
+    invariant r * exp(b,e) == exp(m,n)
     {
         if e % 2 == 0 {
-          b := b * b;
-          e := e / 2;
+          exp_basesquared(b,e/2);//完全看不懂！！！！！！！！！！！！！！！！
+          b := b * b;//16 16*16
+          e := e / 2;//2 1
         } else {
-          r := r * b;
-          e := e - 1;
+          r := r * b;//16*16
+          e := e - 1;//0
         }
     }
+    
 }
 
 lemma exp_basesquared(m:nat, n:nat)

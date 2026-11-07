@@ -1,0 +1,11 @@
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\obj\Debug\net8.0\lab06.GeneratedMSBuildEditorConfig.editorconfig
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\obj\Debug\net8.0\lab06.AssemblyInfoInputs.cache
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\obj\Debug\net8.0\lab06.AssemblyInfo.cs
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\obj\Debug\net8.0\lab06.csproj.CoreCompileInputs.cache
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\obj\Debug\net8.0\lab06.dll
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\obj\Debug\net8.0\refint\lab06.dll
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\obj\Debug\net8.0\lab06.pdb
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\lab06.deps.json
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\lab06.dll
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\obj\Debug\net8.0\ref\lab06.dll
+c:\颜-个人\澳洲，新西兰，爱尔兰\Australia\国立\CoursePPT\Foudation of Computing\LABS\lab06.pdb
