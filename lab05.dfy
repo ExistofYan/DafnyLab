@@ -26,7 +26,12 @@ method absdiff(m : nat, n : nat) returns (r:nat)
   ensures m > n ==> r == m - n
   ensures n >= m ==> r == n - m
 {
-  
+  if m > n {
+    r := m - n;
+  }
+  else{
+    r := n - m;
+  }
 }
   
 // ******** Q2
@@ -44,10 +49,19 @@ method absdiff(m : nat, n : nat) returns (r:nat)
 // For this question, don't bother with an invariant and just
 // test your code with the Main method.  The last question in 
 // the lab will ask you to do the full version with invariant
-method nthSquare(n:nat) returns (sq:nat)
+method nthSquare(n:nat) returns (sq:nat)//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ensures sq == n * n
 {
-
+  var i : nat := n;
+  var sum : nat := 0;
+  while(i > 0)
+  invariant i >= 0
+  invariant sum == n * (n - i)
+  {
+    sum := sum + n;
+    i := i - 1;
+  }
+  sq := sum;
 }
 
 // to run this you will have to give the loops in Q3 bodies, 
