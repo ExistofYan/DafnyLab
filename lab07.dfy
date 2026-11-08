@@ -26,6 +26,9 @@ method meet(a:int, b:int) returns (m:int)
 {
     var x, y := a, b;
     while x != y
+    decreases y - x
+    invariant x <= y
+    invariant (y - x) % 3 ==0
     {
         x := x + 2;
         y := y - 1;
@@ -49,6 +52,7 @@ method balls(r0:nat, b0:nat)
 {
     var red:nat, blue:nat := r0, b0;
     while red > 0 || blue > 0
+    decreases red , blue
     {
         if blue > 0 {
             blue := blue - 1;
@@ -70,6 +74,7 @@ method balls_bounded(r0:nat, b0:nat, K:nat)
 {
     var red:nat, blue:nat := r0, b0;
     while red > 0 || blue > 0
+    decreases red , blue//??????????????????????????????????????????????????????????????
     {
         if blue > 0 {
             blue := blue - 1;
@@ -91,10 +96,14 @@ method balls_bounded(r0:nat, b0:nat, K:nat)
    in a comment and talk to your tutor: why does neither |q| nor 
    sum(q) work on its own?
 */
-method countdown_stack(q0:seq<nat>)
+method countdown_stack(q0:seq<nat>)//amazing question!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 {
     var q := q0;
     while |q| > 0
+    invariant |q| >= 0
+    decreases |q| , if |q| > 0 then q[0] else 0 
+    // decreases only is inferred from invariant, when |q|==0, q[0] is illegal 
+    decreases sum(q)
     {
         var h := q[0];
         if h > 0 {
@@ -116,14 +125,18 @@ function sum(s:seq<nat>) : nat
    goes down.  You will need to call the sum_append lemma (after the 
    method) in the code, and then make sum_append itself verify.
 */
-method countdown_queue(q0:seq<nat>)
+method countdown_queue(q0:seq<nat>)//really important question good fucking question!!!!!!!!!
 {
     var q := q0;
     while |q| > 0
+    invariant |q| >= 0
+    decreases sum(q) , |q|
     {
         var h := q[0];
         if h > 0 {
+            sum_append(q[1..],h - 1);   
             q := q[1..] + [h - 1];
+            
         } else {
             q := q[1..];
         }
@@ -135,6 +148,12 @@ lemma sum_append(s:seq<nat>, x:nat)
 {
     // Hint: Dafny will need be told that two sequences are
     // equal; look at the way sum calls itself recursively
+    if s == [] {
+        assert sum([x]) == x;
+    }else {
+        assert sum(s) == sum([s[0]] + s[1..]);
+        assert (s + [x])[1..] == s[1..] + [x];
+    }
 }
 
 
