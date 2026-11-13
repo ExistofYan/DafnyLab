@@ -74,7 +74,7 @@ method balls_bounded(r0:nat, b0:nat, K:nat)
 {
     var red:nat, blue:nat := r0, b0;
     while red > 0 || blue > 0
-    decreases red , blue//??????????????????????????????????????????????????????????????
+    decreases red * (K + 1000000000000000000000000000000) + blue
     {
         if blue > 0 {
             blue := blue - 1;
@@ -85,6 +85,18 @@ method balls_bounded(r0:nat, b0:nat, K:nat)
         }
     }
 }
+/*
+red    blue     k
+5      5        5
+5      4        5  
+5      3        5
+5      2        5
+5      1        5
+5      0        5
+
+4      5        5
+
+*/
 
 
 // ******** Q4
@@ -96,14 +108,13 @@ method balls_bounded(r0:nat, b0:nat, K:nat)
    in a comment and talk to your tutor: why does neither |q| nor 
    sum(q) work on its own?
 */
-method countdown_stack(q0:seq<nat>)//amazing question!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+method countdown_stack(q0:seq<nat>)
 {
     var q := q0;
     while |q| > 0
     invariant |q| >= 0
-    decreases |q| , if |q| > 0 then q[0] else 0 
-    // decreases only is inferred from invariant, when |q|==0, q[0] is illegal 
-    decreases sum(q)
+    decreases |q|                //, q[0]//q[0]可能根本不存在|q| == 0
+    decreases sum(q) 
     {
         var h := q[0];
         if h > 0 {
