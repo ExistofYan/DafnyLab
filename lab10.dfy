@@ -116,6 +116,17 @@ lemma leAll_memberRL(i : int, l : list<int>)
   requires leAllQ(i,l)
   ensures leAll(i,l)
 {
+  assert forall j | member(j,l) :: i <= j;
+  match l
+  case Nil => {}
+  case Cons(h,t) => {
+    assert member(h,l);
+    assert i <= h;
+    forall x | member(x,t) ensures i <= x {
+      // assert member(x,t);
+      assert member(x,l);
+    }
+  }
 }
 
 // contrapositive version
