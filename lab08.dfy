@@ -29,6 +29,10 @@ method minMax(a : seq<int>) returns (mn:int, mx:int)
     mn, mx := a[0], a[0];
     var i := 1;
     while (i < |a|)
+    invariant 1 <= i <= |a|
+    invariant forall j :: 0 <= j < i ==> a[j] <= mx
+    invariant forall j :: 0 <= j < i ==> mn <= a[j]
+    invariant mn in a[..] && mx in a[..]
     {
         if a[i] < mn { mn := a[i]; }
         if a[i] > mx { mx := a[i]; }
@@ -42,9 +46,12 @@ method minMax(a : seq<int>) returns (mn:int, mx:int)
    (talk to your tutor), and the loop needs invariants */
 method zeroIt(a : array<int>)
   ensures forall i :: 0 <= i < a.Length ==> a[i] == 0
+  modifies a //告诉dafny这个方法会修改a
 {
   var i := 0;
   while i < a.Length 
+  invariant i <= a.Length
+  invariant forall j :: 0 <= j < i ==> a[j] == 0;
   { 
     a[i] := 0; i := i + 1; 
   }
@@ -66,9 +73,15 @@ function reverse<T>(s : seq<T>) : seq<T>
 /* Prove that reverse distributes over sequence-append, as per the 
    statement below, and remember the slogan: "structure of proof is
    reflected in structure of function".  */
-lemma reverse_append<T>(s1:seq<T>, s2:seq<T>) 
+lemma reverse_append<T>(s1:seq<T>, s2:seq<T>) //abstract!
   ensures reverse(s1 + s2) == reverse(s2) + reverse(s1)
 {
+  if |s1| == 0 {
+    assert s1 + s2 == s2;
+  }else {
+    assert |s1| != 0;
+    assert (s1 + s2)[1..] == s1[1..] + s2;
+  }
 }
 
 /* Q4 */
@@ -85,7 +98,7 @@ lemma reverse_append<T>(s1:seq<T>, s2:seq<T>)
    If you have the statement right, the proof should be automatic, just {} 
 */
 lemma reverseIndices<T>(s:seq<T>)
-  ensures false
+  ensures forall i : nat :: 0 <= i < |s| ==> reverse(s)[i] == s[|s| - 1 -i]
 {
 }
 
@@ -96,7 +109,8 @@ lemma reverseIndices<T>(s:seq<T>)
 function sum(s:seq<int>) : int
 {
   // this is deliberately bogus and breaks all the lemmas below...
-  |s|+1+(if s != [] then s[0] else 4)
+  if |s| == 0 then 0
+  else s[0] + sum(s[1..])
 }
 
 /* these results should follow */
@@ -111,6 +125,12 @@ lemma sum_empty() ensures sum([]) == 0 {}
 lemma sumAppend(s1:seq<int>, s2:seq<int>)
   ensures sum(s1 + s2) == sum(s1) + sum(s2)
 {
+  if |s1| == 0 {
+    assert s1 +s2==s2;
+  }else{
+    sumAppend(s1[1..],s2);
+    assert (s1 + s2)[1..] == s1[1..] + s2;
+  }
 }
 
 /* Q7 */
@@ -119,6 +139,15 @@ lemma sumAppend(s1:seq<int>, s2:seq<int>)
 lemma sumReverse(s:seq<int>)
   ensures sum(reverse(s)) == sum(s)
 {
+  if |s| == 0 {
+
+  }else{
+    sumReverse(s[1..]);
+    assert s == [s[0]] + s[1..];
+    assert reverse([s[0]] + s[1..]) == reverse(s[1..]) + reverse([s[0]]);
+    assert sum(reverse(s)) == sum(reverse(s[1..]) + reverse([s[0]]));
+    assert sum(reverse(s)) == sum(reverse(s[1..])) + sum([s[0]]) by {sumAppend(reverse(s[1..]),[s[0]]);}
+  }
 }
 
 
