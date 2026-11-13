@@ -123,10 +123,9 @@ function zip<A, B>(l1 : list<A>, l2 : list<B>) : list<(A, B)>
 // Hint: you can destructure with  var (xs, ys) := unzip(rest);
 function unzip<A, B>(l : list<(A, B)>) : (list<A>, list<B>)
 {
-  match l
+  match l 
   case Nil => (Nil,Nil)
-  case Cons((h1,h2),rest) => var (x,y) := unzip(rest);
-                             (Cons(h1,x),Cons(h2,y))
+  case Cons((h1,h2),t) => () 
 }
 // TODO: give a body
 
