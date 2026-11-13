@@ -262,17 +262,14 @@ ensures subset(A,C)
    match A
    case Nil => {}
    case Cons(h,t) => {
-      assert subset(A,B);
-      assert subset(B,C);
-      assert member(h,B);
-      assert member(h,C) by {subset_member(h,B,C);}
+      subset_member(h,B,C);
    }
 }
 
 // ******** Q16
 /* Prove that if A and B are subsets of each other, then
    i is a member of A if it is a member of B */
-lemma subset_antisym(i : int, A : ilist, B : ilist)//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+lemma subset_antisym(i : int, A : ilist, B : ilist)
 requires subset(A,B) 
 requires subset(B,A)
 ensures member(i,A) <==> member(i,B)
@@ -280,24 +277,24 @@ ensures member(i,A) <==> member(i,B)
    if member(i,A) {
       match A case Nil => {}
       case Cons(h,t) => {
-         if h == i {
+         if i == h {
 
-         }else{
+         }
+         else{
             assert member(i,t);
-            assert member(i,A);
-            assert member(i,B) by {subset_member(i,A,B);}
+            subset_member(i,t,B);
          }
       }
    }
    if member(i,B) {
       match B case Nil => {}
       case Cons(h,t) => {
-         if h == i {
+         if i == h {
 
-         }else{
+         }
+         else{
             assert member(i,t);
-            assert member(i,B);
-            assert member(i,A) by {subset_member(i,B,A);}
+            subset_member(i,t,A);
          }
       }
    }
@@ -312,8 +309,8 @@ ensures member(i,A) <==> member(i,B)
    Add the requires clause that we need to make
    Dafny happy */
 function nth<T>(n : nat, l : list<T>) : T
-// requires l != Nil ??????????????????????????????????????????????????????????????????????
-requires 0 <= n < length(l) // this includes l != Nil
+// requires length(l) > n >= 0
+requires 0 <= n < length(l)
 {
     match l 
     case Cons(h,t) => if n==0 then h else nth(n-1,t)
@@ -327,20 +324,19 @@ lemma member_nth(i:int, l : list<int>)//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ensures member(i, l) <==> exists n : nat | n < length(l) :: nth(n,l) == i
   {
    if member(i,l) {
-      match l //do not have the situation that l is Nil
+      match l //case Nil => {}
       case Cons(h,t) => {
          if h == i {
             assert nth(0,l) == i;
          }else{
             assert member(i,t);
+            member_nth(i,t);
             var n : nat :| n < length(t) && nth(n,t) == i;
-            assert l == Cons(h,t);
-            assert h != i;
-            assert length(t) + 1 == length(l);
-            assert nth(n+1,l)==i;
+            assert nth(n + 1 , l) == i;
+            assert n + 1 < length(l);
+            assert exists j : nat | j < length(l) :: nth(j,l) == i;
          }
       }
-   }else{
    }
   }
 

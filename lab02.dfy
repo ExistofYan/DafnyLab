@@ -106,11 +106,9 @@ function reverse<T>(l : list<T>) : list<T>
 // for the "either is Nil" cases:
 function zip<A, B>(l1 : list<A>, l2 : list<B>) : list<(A, B)>
 {
-  match (l1,l2)
-  case (Nil, Nil) => Nil
-  case (Nil , _) => Nil
-  case (_,Nil) => Nil
-  case (Cons(h1,t1),Cons(h2,t2)) => Cons((h1,h2),zip(t1,t2))
+  match l1
+  case Nil => Nil
+  case Cons(h1,t1) => match l2 case Nil => Nil case Cons(h2,t2) => Cons((h1,h2),zip(t1,t2))
 }
 // TODO: give a body
 
@@ -125,7 +123,9 @@ function unzip<A, B>(l : list<(A, B)>) : (list<A>, list<B>)
 {
   match l 
   case Nil => (Nil,Nil)
-  case Cons((h1,h2),t) => () 
+  case Cons((h1,h2),t) => 
+    var (xs, ys) := unzip(t);
+    (Cons(h1,xs),Cons(h2,ys))
 }
 // TODO: give a body
 
