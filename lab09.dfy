@@ -26,9 +26,12 @@
 
 method setToK(a : array<int>, k : int) 
   ensures forall i : nat | i < a.Length :: a[i] == k
+  modifies a
 {
   var c : nat := 0;
   while c < a.Length 
+  invariant 0 <= c <= a.Length
+  invariant forall i : nat | i < c :: a[i] == k
   {
     a[c] := k;
     c := c + 1;
@@ -41,7 +44,9 @@ method setToK(a : array<int>, k : int)
    equal to the first element of the array squared
 */
 method setToFirstSquared(a : array<int>)
+  requires a.Length > 0 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!首先要判断这个长度  
   modifies a
+  ensures forall i : nat | i < a.Length :: a[i] ==  old(a[0]) * old(a[0])
 {
   setToK(a, a[0] * a[0]);
 }
@@ -61,12 +66,15 @@ method arrayOfNines() returns (a:array<int>)
   a[0] := -3;
   setToFirstSquared(a);
   // call constantSeqSum here.
+  constantSeqSum(a[..],9);
 }
 
 /* with the right precondition, this goes through automatically, with the 
   {} proof
 */
 lemma constantSeqSum(s : seq<int>, k : int)
+  requires |s| > 0
+  requires forall i : nat | i < |s| :: s[i] == k
   ensures sum(s) == k * |s|
 {}
 
@@ -88,6 +96,10 @@ method prefixSum(a : array<int>)
     if a.Length == 0 { return ; }
     var i := 1;
     while i < a.Length 
+    invariant i <=  a.Length
+    invariant forall j :nat :: j < i ==> a[j] == sum(old(a[..j+1]))
+    invariant forall j : nat | 0 < j < i :: a[j] == old(a[j]) + a[j-1]
+    invariant forall j : nat | i <= j < a.Length :: a[j] == old(a[j])
     {
       a[i] := a[i] + a[i-1];
       sumRight(old(a[..]), i);
