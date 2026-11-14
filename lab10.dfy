@@ -116,16 +116,16 @@ lemma leAll_memberRL(i : int, l : list<int>)
   requires leAllQ(i,l)
   ensures leAll(i,l)
 {
-  assert forall j | member(j,l) :: i <= j;
-  match l
+  match l 
   case Nil => {}
   case Cons(h,t) => {
+    assert forall j | member(j,l) :: i <= j;
     assert member(h,l);
     assert i <= h;
-    forall x | member(x,t) ensures i <= x {
-      // assert member(x,t);
-      assert member(x,l);
-    }
+    assert forall k | member(k,t) :: member(k,l);
+    assert forall k | member(k,t) :: i <= k ;
+    leAll_memberRL(i,t);//it needs to prove the requires
+    
   }
 }
 
@@ -135,6 +135,18 @@ lemma leAll_memberRL_CP(i:int, l:list<int>)
   requires !leAll(i,l)
   ensures !leAllQ(i,l)
 {
+   match l
+    case Nil => {}
+    case Cons(h,t) => {
+      if h < i {
+        assert member(h,l);
+      }else{
+        leAll_memberRL_CP(i, t);             
+        var j :| member(j, t) && j < i;     
+        assert member(j, l) && j < i;         
+      }
+    }
+
 }
 
 // useful in Q2
@@ -158,6 +170,14 @@ lemma insertSorted(i:int, l:list<int>)
   requires sortedList(l)
   ensures sortedList(insert(i,l))
 {
+  match l case Nil => {}
+  case Cons(h,t) => {
+    assert sortedList(t) && leAll(h,t);
+    insertSorted(i,t);
+    assert member(h,l);
+    leAll_member(i,t);
+    member_insert(i,h,t);
+  }
 }
 
 /* *********** PART 3 **************/
@@ -183,7 +203,7 @@ ghost predicate mseqLists(l1 : list<int>, l2 : list<int>)
    The proof should be {}/automatic
 */
 lemma insert_mseq(i:int, l:list<int>)
-  ensures false // needs correcting!
+  ensures countI(i,insert(i,l)) == countI(i,Cons(i,l)) // needs correcting!
 {}
 
 /***** Q3(b) */
@@ -193,15 +213,15 @@ lemma insert_mseq(i:int, l:list<int>)
    
    The proof should be {}/automatic */
 lemma mseqLists_Cons(h:int, l1:list<int>, l2:list<int>)
-  requires true // needs correcting!
-  ensures false // needs correcting!
+  requires mseqLists(l1,l2) // needs correcting!
+  ensures countI(h,Cons(h,l1)) == countI(h,Cons(h,l2)) // needs correcting!
 {}
 
 /***** Q3(c) */
 /* State and prove that insertionSort does the right thing. */
 lemma insertionSort_correct(l:list<int>)
-  ensures false  // result is permutation of input
-  ensures false  // result is sorted
+  ensures mseqLists(l,insertionSort(l))  // result is permutation of input
+  ensures sortedList(l)  // result is sorted
 {
 }
 
